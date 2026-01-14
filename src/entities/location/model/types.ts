@@ -10,6 +10,6 @@ export type LocationNode = {
   name: string;
   fullName: string;
   level: "sido" | "sigungu" | "dong";
-  coordinates: LocationCoordinates;
+  coordinates?: LocationCoordinates;
   parentId?: LocationId;
 };
