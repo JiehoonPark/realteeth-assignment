@@ -5,9 +5,14 @@ type RequestOptions = {
   params?: OpenWeatherQueryParams;
 };
 
+export type OpenWeatherError = Error & {
+  status?: number;
+  body?: string;
+};
+
 const DEFAULT_OPENWEATHER_BASE_URL = "https://api.openweathermap.org/data/2.5";
 
-const OPENWEATHER_API_KEY =
+export const OPENWEATHER_API_KEY =
   process.env.OPENWEATHER_API_KEY ??
   process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY ??
   "";
@@ -47,13 +52,16 @@ export async function fetchOpenWeather<TResponse>({
   }
 
   const url = buildUrl(pathname, params);
-  const response = await fetch(url.toString());
+  const response = await fetch(url.toString(), { cache: "no-store" });
 
   if (!response.ok) {
     const errorBody = await response.text();
-    throw new Error(
+    const error = new Error(
       `OpenWeatherMap 요청 실패: ${response.status} ${response.statusText} - ${errorBody}`,
-    );
+    ) as OpenWeatherError;
+    error.status = response.status;
+    error.body = errorBody;
+    throw error;
   }
 
   return response.json() as Promise<TResponse>;
