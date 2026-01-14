@@ -4,9 +4,7 @@ type LocationDetailPageProps = {
   };
 };
 
-export default function LocationDetailPage({
-  params,
-}: LocationDetailPageProps) {
+export default function LocationDetailPage({}: LocationDetailPageProps) {
   return (
     <main>
       <h1>위치</h1>
