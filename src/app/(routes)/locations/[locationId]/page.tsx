@@ -1,11 +1,12 @@
 import LocationDetailClient from "@/widgets/weather/ui/location-detail-client";
 
 type LocationDetailPageProps = {
-  params: {
+  params: Promise<{
     locationId: string;
-  };
+  }>;
 };
 
-export default function LocationDetailPage({ params }: LocationDetailPageProps) {
-  return <LocationDetailClient locationId={params.locationId} />;
+export default async function LocationDetailPage({ params }: LocationDetailPageProps) {
+  const resolvedParams = await params;
+  return <LocationDetailClient locationId={resolvedParams.locationId} />;
 }
