@@ -6,4 +6,5 @@ export const weatherQueryKeys = {
     latitude,
     longitude,
   ],
+  byName: (locationName: string) => [CURRENT_WEATHER_QUERY_KEY, locationName],
 };

@@ -19,14 +19,13 @@ type OpenWeatherForecastResponse = {
 function mapToWeatherSummary(
   currentResponse: OpenWeatherResponse,
   forecastResponse: OpenWeatherForecastResponse,
-  latitude: number,
-  longitude: number,
+  locationId: string,
 ): WeatherSummary {
   const primary = currentResponse.weather[0];
   const timezoneOffsetMs = (forecastResponse.city?.timezone ?? 0) * 1000;
 
   return {
-    locationId: `${latitude},${longitude}`,
+    locationId,
     description: primary?.description ?? "",
     icon: primary?.icon ?? "",
     temperature: {
@@ -53,28 +52,38 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const latitude = Number(searchParams.get("lat"));
   const longitude = Number(searchParams.get("lon"));
+  const locationName = searchParams.get("name") ?? undefined;
 
-  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
-    return NextResponse.json({ message: "lat, lon 쿼리 파라미터가 필요합니다." }, { status: 400 });
+  const hasCoords = Number.isFinite(latitude) && Number.isFinite(longitude);
+  const hasName = Boolean(locationName);
+
+  if (!hasCoords && !hasName) {
+    return NextResponse.json(
+      { message: "lat, lon 또는 name 쿼리 파라미터가 필요합니다." },
+      { status: 400 },
+    );
   }
 
   try {
+    const queryParams = hasCoords
+      ? { lat: latitude, lon: longitude }
+      : { q: locationName };
+
     const [currentResponse, forecastResponse] = await Promise.all([
       fetchOpenWeather<OpenWeatherResponse>({
         pathname: "/weather",
-        params: { lat: latitude, lon: longitude },
+        params: queryParams,
       }),
       fetchOpenWeather<OpenWeatherForecastResponse>({
         pathname: "/forecast",
-        params: { lat: latitude, lon: longitude },
+        params: queryParams,
       }),
     ]);
 
     const summary = mapToWeatherSummary(
       currentResponse,
       forecastResponse,
-      latitude,
-      longitude,
+      hasCoords ? `${latitude},${longitude}` : locationName ?? "",
     );
 
     return NextResponse.json(summary);
