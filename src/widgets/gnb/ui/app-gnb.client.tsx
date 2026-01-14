@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 
-import { GlobalSearchBar } from "@/widgets/gnb/ui/global-search-bar";
+import { GlobalSearchBar } from "@/widgets/gnb/ui/global-search-bar.client";
 
 const HOME_LABEL = "현재 위치 날씨로 돌아가기";
 

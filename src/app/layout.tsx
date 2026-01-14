@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import type { ReactNode } from "react";
 
 import { ReactQueryProvider } from "@/shared/providers/react-query-provider";
-import { AppGnb } from "@/widgets/gnb/ui/app-gnb";
+import { AppGnb } from "@/widgets/gnb/ui/app-gnb.client";
 
 import "./globals.css";
 

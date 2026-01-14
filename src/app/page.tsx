@@ -1,4 +1,4 @@
-import { CurrentLocationWeather } from "@/widgets/weather/ui/current-location-weather";
+import { CurrentLocationWeather } from "@/widgets/weather/ui/current-location-weather.client";
 
 export default function HomePage() {
   return (

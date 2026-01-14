@@ -1,4 +1,4 @@
-import LocationDetailClient from "@/widgets/weather/ui/location-detail-client";
+import LocationDetailClient from "@/widgets/weather/ui/location-detail.client";
 
 type LocationDetailPageProps = {
   params: Promise<{

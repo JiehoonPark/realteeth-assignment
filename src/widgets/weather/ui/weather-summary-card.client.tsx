@@ -12,6 +12,9 @@ type WeatherSummaryCardProps = {
   fallbackText?: string;
 };
 
+const DEFAULT_ERROR_MESSAGE = "날씨 정보를 가져오지 못했습니다.";
+const CONTENT_MIN_HEIGHT_CLASS = "min-h-[180px]";
+
 export function WeatherSummaryCard({
   title,
   description,
@@ -21,6 +24,8 @@ export function WeatherSummaryCard({
   fallbackText = "날씨 정보를 표시할 수 없습니다.",
 }: WeatherSummaryCardProps) {
   const hasError = Boolean(errorMessage);
+  const hasSummary = Boolean(summary);
+  const resolvedErrorMessage = errorMessage || DEFAULT_ERROR_MESSAGE;
 
   return (
     <Card>
@@ -28,16 +33,24 @@ export function WeatherSummaryCard({
         <CardTitle>{title}</CardTitle>
         {description ? <CardDescription>{description}</CardDescription> : null}
       </CardHeader>
-      <CardContent className="space-y-3">
-        {isLoading && <p className="text-sm text-muted-foreground">날씨 정보를 불러오는 중입니다.</p>}
-
-        {hasError && (
-          <p className="text-sm text-destructive">
-            {errorMessage || "날씨 정보를 가져오지 못했습니다."}
-          </p>
+      <CardContent className={`space-y-3 ${CONTENT_MIN_HEIGHT_CLASS}`}>
+        {isLoading && (
+          <div className="space-y-2 text-sm text-muted-foreground">
+            <div className="h-4 w-24 rounded bg-muted" />
+            <div className="h-4 w-40 rounded bg-muted" />
+            <div className="flex flex-wrap gap-2">
+              <span className="h-6 w-16 rounded bg-muted" />
+              <span className="h-6 w-16 rounded bg-muted" />
+              <span className="h-6 w-16 rounded bg-muted" />
+            </div>
+          </div>
         )}
 
-        {summary && (
+        {hasError && (
+          <p className="text-sm text-destructive">{resolvedErrorMessage}</p>
+        )}
+
+        {hasSummary && summary && (
           <div className="space-y-2">
             <p className="text-2xl font-semibold text-foreground">
               {Math.round(summary.temperature.current)}°C
@@ -61,7 +74,7 @@ export function WeatherSummaryCard({
           </div>
         )}
 
-        {!isLoading && !hasError && !summary && (
+        {!isLoading && !hasError && !hasSummary && (
           <p className="text-sm text-muted-foreground">{fallbackText}</p>
         )}
       </CardContent>

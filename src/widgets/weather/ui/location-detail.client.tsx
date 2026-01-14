@@ -1,7 +1,7 @@
 'use client';
 
 import { useWeatherByName } from "@/widgets/weather/api/use-weather-by-name";
-import { WeatherSummaryCard } from "@/widgets/weather/ui/weather-summary-card";
+import { WeatherSummaryCard } from "@/widgets/weather/ui/weather-summary-card.client";
 
 type LocationDetailClientProps = {
   locationId: string;
