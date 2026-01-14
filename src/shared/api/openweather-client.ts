@@ -1,5 +1,3 @@
-import { assertWeatherApiEnv, weatherApiEnv } from "@/shared/config/env";
-
 type OpenWeatherQueryParams = Record<string, string | number | undefined>;
 
 type RequestOptions = {
@@ -7,11 +5,28 @@ type RequestOptions = {
   params?: OpenWeatherQueryParams;
 };
 
+const DEFAULT_OPENWEATHER_BASE_URL = "https://api.openweathermap.org/data/2.5";
+
+const OPENWEATHER_API_KEY =
+  process.env.OPENWEATHER_API_KEY ??
+  process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY ??
+  "";
+const rawBaseUrl =
+  process.env.OPENWEATHER_BASE_URL ??
+  process.env.NEXT_PUBLIC_OPENWEATHER_BASE_URL ??
+  DEFAULT_OPENWEATHER_BASE_URL;
+
+const OPENWEATHER_BASE_URL = rawBaseUrl.includes("/data/2.5")
+  ? rawBaseUrl
+  : `${rawBaseUrl.replace(/\/$/, "")}/data/2.5`;
+
 function buildUrl(pathname: string, params?: OpenWeatherQueryParams) {
-  const url = new URL(pathname, weatherApiEnv.baseUrl);
+  const base = OPENWEATHER_BASE_URL.replace(/\/$/, "");
+  const cleanedPath = pathname.replace(/^\//, "");
+  const url = new URL(`${base}/${cleanedPath}`);
   const mergedParams = {
-    units: weatherApiEnv.units,
-    appid: weatherApiEnv.apiKey,
+    units: "metric",
+    appid: OPENWEATHER_API_KEY,
     ...params,
   };
 
@@ -27,13 +42,18 @@ export async function fetchOpenWeather<TResponse>({
   pathname,
   params,
 }: RequestOptions): Promise<TResponse> {
-  assertWeatherApiEnv();
+  if (!OPENWEATHER_API_KEY) {
+    throw new Error("OpenWeatherMap API 키가 설정되지 않았습니다.");
+  }
 
   const url = buildUrl(pathname, params);
   const response = await fetch(url.toString());
 
   if (!response.ok) {
-    throw new Error(`OpenWeatherMap 요청 실패: ${response.statusText}`);
+    const errorBody = await response.text();
+    throw new Error(
+      `OpenWeatherMap 요청 실패: ${response.status} ${response.statusText} - ${errorBody}`,
+    );
   }
 
   return response.json() as Promise<TResponse>;
