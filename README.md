@@ -1,5 +1,9 @@
 # realteeth-assignment
 
+## 배포 주소
+
+- https://realteeth-assignment-five.vercel.app/
+
 ## 프로젝트 개요
 
 - 위치 기반 날씨 조회와 즐겨찾기 관리를 제공하는 과제용 웹 앱
