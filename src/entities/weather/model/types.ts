@@ -13,6 +13,10 @@ export type HourlyTemperature = {
 
 export type WeatherSummary = {
   locationId: LocationId;
+  coordinates: {
+    latitude: number;
+    longitude: number;
+  };
   description: string;
   icon: string;
   temperature: TemperatureCelsius;
