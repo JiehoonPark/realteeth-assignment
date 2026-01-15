@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import type { KeyboardEvent } from "react";
 import { useState } from "react";
 
+import { Search } from "lucide-react";
+
 import { getWeatherByName, weatherQueryKeys } from "@/entities/weather";
 import { getLocationMatches, useLocationSearch } from "@/features/search";
 import { useDebouncedValue } from "@/shared/lib/use-debounce";
@@ -56,12 +58,16 @@ export function GlobalSearchBar() {
 
   return (
     <div className="relative w-full max-w-xl">
+      <Search
+        className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+        aria-hidden
+      />
       <Input
         placeholder="예: 서울특별시, 종로구, 청운동"
         value={keyword}
         onChange={(event) => setKeyword(event.target.value)}
         onKeyDown={handleKeyDown}
-        className="bg-background"
+        className="bg-background pl-9"
       />
       {(debouncedKeyword || message) && (
         <div className="absolute left-0 right-0 top-full z-20 mt-2 max-h-72 overflow-y-auto rounded-md border border-border bg-background shadow-lg">
