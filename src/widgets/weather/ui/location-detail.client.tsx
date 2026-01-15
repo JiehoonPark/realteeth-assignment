@@ -28,16 +28,16 @@ export default function LocationDetailClient({
 
   return (
     <main className="mx-auto flex max-w-5xl flex-col gap-6 px-6 pb-8">
-      <div>
-        <FavoriteToggleButton
-          locationId={locationId}
-          initialAlias={locationName}
-          coordinates={coordinatesForFavorite}
-        />
-      </div>
       <WeatherSummaryCard
         title={`${locationName} 날씨`}
         description={aliasDescription}
+        action={
+          <FavoriteToggleButton
+            locationId={locationId}
+            initialAlias={locationName}
+            coordinates={coordinatesForFavorite}
+          />
+        }
         summary={weatherQuery.data}
         isLoading={weatherQuery.isLoading}
         errorMessage={weatherQuery.error instanceof Error ? weatherQuery.error.message : undefined}

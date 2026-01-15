@@ -15,7 +15,7 @@ import {
   weatherQueryKeys,
 } from "@/entities/weather";
 import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Input } from "@/shared/ui/input";
 
 type FavoriteWeatherCardProps = {
@@ -108,66 +108,75 @@ export function FavoriteWeatherCard({ favorite }: FavoriteWeatherCardProps) {
       onKeyDown={handleCardKeyDown}
       className="cursor-pointer"
     >
-      <CardHeader className="space-y-3">
-        {isEditingAlias ? (
-          <Input
-            value={aliasDraft}
-            onChange={(event) => setAliasDraft(event.target.value)}
-            onClick={(event) => event.stopPropagation()}
-          />
-        ) : (
-          <CardTitle>{favorite.alias}</CardTitle>
-        )}
-        <div className="flex flex-wrap gap-2">
+      <CardHeader>
+        <div className="min-h-9">
           {isEditingAlias ? (
-            <>
-              <Button
-                type="button"
-                size="sm"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  handleAliasSave();
-                }}
-              >
-                {SAVE_LABEL}
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  handleAliasCancel();
-                }}
-              >
-                {CANCEL_LABEL}
-              </Button>
-            </>
+            <Input
+              value={aliasDraft}
+              onChange={(event) => setAliasDraft(event.target.value)}
+              onClick={(event) => event.stopPropagation()}
+              className="h-9"
+            />
           ) : (
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={(event) => {
-                event.stopPropagation();
-                handleAliasEditStart();
-              }}
-            >
-              {EDIT_LABEL}
-            </Button>
+            <CardTitle className="flex min-h-9 items-center truncate" title={favorite.alias}>
+              {favorite.alias}
+            </CardTitle>
           )}
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            onClick={(event) => {
-              event.stopPropagation();
-              handleRemove();
-            }}
-          >
-            {REMOVE_LABEL}
-          </Button>
         </div>
+        <CardAction>
+          <div className="flex items-center gap-2">
+            {isEditingAlias ? (
+              <>
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    handleAliasSave();
+                  }}
+                >
+                  {SAVE_LABEL}
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    handleAliasCancel();
+                  }}
+                >
+                  {CANCEL_LABEL}
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    handleAliasEditStart();
+                  }}
+                >
+                  {EDIT_LABEL}
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    handleRemove();
+                  }}
+                >
+                  {REMOVE_LABEL}
+                </Button>
+              </>
+            )}
+          </div>
+        </CardAction>
       </CardHeader>
       <CardContent className="space-y-2">
         {weatherQuery.isLoading ? (
