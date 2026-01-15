@@ -1,0 +1,1 @@
+export const WEATHER_REFETCH_INTERVAL_MS = 10 * 60 * 1000;
