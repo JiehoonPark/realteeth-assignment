@@ -8,7 +8,7 @@ import { useState } from "react";
 import { Search } from "lucide-react";
 
 import { getWeatherByName, weatherQueryKeys } from "@/entities/weather";
-import { getLocationMatches, useLocationSearch } from "@/features/search";
+import { useLocationSearch } from "@/features/search";
 import { useDebouncedValue } from "@/shared/lib/use-debounce";
 import { Input } from "@/shared/ui/input";
 
@@ -22,14 +22,11 @@ export function GlobalSearchBar() {
   const { results, message } = useLocationSearch({ keyword: debouncedKeyword });
 
   const handleSubmit = () => {
-    const trimmedKeyword = keyword.trim();
+    const trimmedKeyword = debouncedKeyword.trim();
     if (!trimmedKeyword) return;
 
-    const immediateResults = getLocationMatches(trimmedKeyword);
-    const bestMatch = immediateResults[0] ?? null;
-
-    if (bestMatch) {
-      handleSelect(bestMatch.id);
+    if (results.length > 0) {
+      handleSelect(results[0].id);
       return;
     }
 
