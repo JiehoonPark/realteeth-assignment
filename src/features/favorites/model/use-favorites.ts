@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from "react";
 
-import type { LocationId } from "@/entities/location";
+import type { LocationCoordinates, LocationId } from "@/entities/location";
 
 import { MAX_FAVORITES, type FavoriteLocation } from "./types";
 
@@ -11,6 +11,7 @@ type FavoritesState = {
 type AddFavoriteParams = {
   locationId: LocationId;
   alias?: string;
+  coordinates?: LocationCoordinates;
 };
 
 type UpdateFavoriteAliasParams = {
@@ -68,12 +69,13 @@ function normalizeLocationName(locationId: LocationId) {
   return normalizeLocationId(locationId).split("-").join(" ");
 }
 
-function createFavorite({ locationId, alias }: AddFavoriteParams): FavoriteLocation {
+function createFavorite({ locationId, alias, coordinates }: AddFavoriteParams): FavoriteLocation {
   const resolvedAlias = alias?.trim() || normalizeLocationName(locationId);
   return {
     locationId,
     alias: resolvedAlias,
     pinnedAt: new Date().toISOString(),
+    coordinates,
   };
 }
 
@@ -92,10 +94,19 @@ function sanitizeFavorites(rawValue: unknown): FavoriteLocation[] {
     })
     .map((favorite) => {
       const normalizedLocationId = normalizeLocationId(favorite.locationId);
+      const coordinates =
+        favorite.coordinates &&
+        typeof favorite.coordinates.latitude === "number" &&
+        typeof favorite.coordinates.longitude === "number" &&
+        Number.isFinite(favorite.coordinates.latitude) &&
+        Number.isFinite(favorite.coordinates.longitude)
+          ? favorite.coordinates
+          : undefined;
       return {
         locationId: normalizedLocationId,
         alias: favorite.alias || normalizeLocationName(normalizedLocationId),
         pinnedAt: favorite.pinnedAt || new Date().toISOString(),
+        coordinates,
       };
     });
 }
@@ -141,15 +152,32 @@ function findFavoriteByLocationId(locationId: LocationId) {
   );
 }
 
-function addFavorite({ locationId, alias }: AddFavoriteParams) {
+function addFavorite({ locationId, alias, coordinates }: AddFavoriteParams) {
   const normalizedLocationId = normalizeLocationId(locationId);
   const existingFavorite = findFavoriteByLocationId(normalizedLocationId);
-  if (existingFavorite) return false;
+  if (existingFavorite) {
+    if (!coordinates) return false;
+    const hasCoordinates = Boolean(existingFavorite.coordinates);
+    if (hasCoordinates) return false;
+    const nextFavorites = currentState.favorites.map((favorite) => {
+      if (favorite.locationId !== normalizedLocationId) return favorite;
+      return {
+        ...favorite,
+        coordinates,
+      };
+    });
+    setState({ favorites: nextFavorites });
+    return true;
+  }
 
   const isAtCapacity = currentState.favorites.length >= MAX_FAVORITES;
   if (isAtCapacity) return false;
 
-  const newFavorite = createFavorite({ locationId: normalizedLocationId, alias });
+  const newFavorite = createFavorite({
+    locationId: normalizedLocationId,
+    alias,
+    coordinates,
+  });
   setState({ favorites: [newFavorite, ...currentState.favorites] });
   return true;
 }

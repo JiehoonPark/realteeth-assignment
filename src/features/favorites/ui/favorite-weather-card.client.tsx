@@ -7,9 +7,12 @@ import { useQuery } from "@tanstack/react-query";
 
 import type { FavoriteLocation } from "@/features/favorites";
 import { useFavorites } from "@/features/favorites/model/use-favorites";
-import { WEATHER_REFETCH_INTERVAL_MS } from "@/entities/weather/model/query-options";
-import { getWeatherByName } from "@/entities/weather/api/get-weather-by-name";
-import { weatherQueryKeys } from "@/entities/weather/model/query-keys";
+import {
+  getWeatherByCoordinates,
+  getWeatherByName,
+  WEATHER_REFETCH_INTERVAL_MS,
+  weatherQueryKeys,
+} from "@/entities/weather";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Input } from "@/shared/ui/input";
@@ -34,12 +37,27 @@ export function FavoriteWeatherCard({ favorite }: FavoriteWeatherCardProps) {
   const [aliasDraft, setAliasDraft] = useState(favorite.alias);
   const { updateFavoriteAlias, removeFavorite } = useFavorites();
   const locationName = normalizeLocationName(favorite.locationId);
-  const locationHref = `/locations/${encodeURIComponent(favorite.locationId)}`;
+  const coordinates = favorite.coordinates;
+  const hasCoordinates =
+    Boolean(coordinates) &&
+    Number.isFinite(coordinates?.latitude) &&
+    Number.isFinite(coordinates?.longitude);
+  const locationHref = hasCoordinates
+    ? `/locations/${encodeURIComponent(favorite.locationId)}?lat=${coordinates!.latitude}&lon=${coordinates!.longitude}`
+    : `/locations/${encodeURIComponent(favorite.locationId)}`;
 
   const weatherQuery = useQuery({
-    queryKey: weatherQueryKeys.byName(locationName),
-    queryFn: () => getWeatherByName(locationName),
-    enabled: Boolean(locationName),
+    queryKey: hasCoordinates
+      ? weatherQueryKeys.current(coordinates!.latitude, coordinates!.longitude)
+      : weatherQueryKeys.byName(locationName),
+    queryFn: () =>
+      hasCoordinates
+        ? getWeatherByCoordinates({
+            latitude: coordinates!.latitude,
+            longitude: coordinates!.longitude,
+          })
+        : getWeatherByName(locationName),
+    enabled: hasCoordinates ? true : Boolean(locationName),
     refetchInterval: WEATHER_REFETCH_INTERVAL_MS,
   });
 

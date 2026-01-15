@@ -1,6 +1,6 @@
 'use client';
 
-import type { LocationId } from "@/entities/location";
+import type { LocationCoordinates, LocationId } from "@/entities/location";
 
 import { useFavorites } from "@/features/favorites/model/use-favorites";
 import { Button } from "@/shared/ui/button";
@@ -8,12 +8,17 @@ import { Button } from "@/shared/ui/button";
 type FavoriteToggleButtonProps = {
   locationId: LocationId;
   initialAlias: string;
+  coordinates?: LocationCoordinates;
 };
 
 const ADD_LABEL = "즐겨찾기 추가";
 const REMOVE_LABEL = "즐겨찾기 제거";
 
-export function FavoriteToggleButton({ locationId, initialAlias }: FavoriteToggleButtonProps) {
+export function FavoriteToggleButton({
+  locationId,
+  initialAlias,
+  coordinates,
+}: FavoriteToggleButtonProps) {
   const { isFavorite, isAtCapacity, addFavorite, removeFavorite } = useFavorites();
   const hasFavorite = isFavorite(locationId);
   const isDisabled = isAtCapacity && !hasFavorite;
@@ -24,7 +29,7 @@ export function FavoriteToggleButton({ locationId, initialAlias }: FavoriteToggl
       return;
     }
 
-    addFavorite({ locationId, alias: initialAlias });
+    addFavorite({ locationId, alias: initialAlias, coordinates });
   };
 
   return (

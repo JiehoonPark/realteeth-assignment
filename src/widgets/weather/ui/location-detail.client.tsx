@@ -1,11 +1,13 @@
 'use client';
 
+import type { LocationCoordinates } from "@/entities/location";
 import { FavoriteToggleButton, useFavorites } from "@/features/favorites";
-import { useWeatherByName } from "@/widgets/weather/api/use-weather-by-name";
+import { useWeatherByLocation } from "@/widgets/weather/api/use-weather-by-location";
 import { WeatherSummaryCard } from "@/widgets/weather/ui/weather-summary-card.client";
 
 type LocationDetailClientProps = {
   locationId: string;
+  initialCoordinates?: LocationCoordinates;
 };
 
 function normalizeLocationName(rawId: string) {
@@ -13,18 +15,30 @@ function normalizeLocationName(rawId: string) {
   return decoded.split("-").join(" ");
 }
 
-export default function LocationDetailClient({ locationId }: LocationDetailClientProps) {
+export default function LocationDetailClient({
+  locationId,
+  initialCoordinates,
+}: LocationDetailClientProps) {
   const locationName = normalizeLocationName(locationId);
   const { getFavoriteByLocationId } = useFavorites();
   const favorite = getFavoriteByLocationId(locationId);
+  const resolvedCoordinates = initialCoordinates ?? favorite?.coordinates;
   const aliasDescription =
     favorite?.alias && favorite.alias !== locationName ? favorite.alias : undefined;
-  const weatherQuery = useWeatherByName(locationName);
+  const weatherQuery = useWeatherByLocation({
+    locationName,
+    coordinates: resolvedCoordinates,
+  });
+  const coordinatesForFavorite = weatherQuery.data?.coordinates ?? resolvedCoordinates;
 
   return (
     <main className="mx-auto flex max-w-5xl flex-col gap-6 px-6 pb-8">
       <div>
-        <FavoriteToggleButton locationId={locationId} initialAlias={locationName} />
+        <FavoriteToggleButton
+          locationId={locationId}
+          initialAlias={locationName}
+          coordinates={coordinatesForFavorite}
+        />
       </div>
       <WeatherSummaryCard
         title={`${locationName} 날씨`}

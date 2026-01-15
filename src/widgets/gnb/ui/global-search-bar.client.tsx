@@ -3,11 +3,39 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import type { LocationCoordinates } from "@/entities/location";
 import { useLocationSearch } from "@/features/search";
 import { useDebouncedValue } from "@/shared/lib/use-debounce";
 import { Input } from "@/shared/ui/input";
 
 const DEBOUNCE_DELAY_MS = 200;
+
+type CoordinatesResponse = {
+  latitude: number;
+  longitude: number;
+};
+
+async function fetchCoordinatesByName(
+  locationName: string,
+): Promise<LocationCoordinates | undefined> {
+  const response = await fetch(
+    `/api/coordinates?name=${encodeURIComponent(locationName)}`,
+  );
+
+  if (!response.ok) return undefined;
+
+  const data = (await response.json()) as CoordinatesResponse;
+  const hasValidCoordinates =
+    Number.isFinite(data.latitude) && Number.isFinite(data.longitude);
+
+  if (!hasValidCoordinates) return undefined;
+
+  return { latitude: data.latitude, longitude: data.longitude };
+}
+
+function buildLocationName(locationId: string) {
+  return decodeURIComponent(locationId).split("-").join(" ");
+}
 
 export function GlobalSearchBar() {
   const router = useRouter();
@@ -15,8 +43,21 @@ export function GlobalSearchBar() {
   const debouncedKeyword = useDebouncedValue(keyword, DEBOUNCE_DELAY_MS);
   const { results, message } = useLocationSearch({ keyword: debouncedKeyword });
 
-  const handleSelect = (locationId: string) => {
-    router.push(`/locations/${encodeURIComponent(locationId)}`);
+  const handleSelect = async (locationId: string) => {
+    const locationName = buildLocationName(locationId);
+    let coordinates: LocationCoordinates | undefined;
+
+    try {
+      coordinates = await fetchCoordinatesByName(locationName);
+    } catch (error) {
+      coordinates = undefined;
+    }
+
+    const coordinateQuery = coordinates
+      ? `?lat=${coordinates.latitude}&lon=${coordinates.longitude}`
+      : "";
+
+    router.push(`/locations/${encodeURIComponent(locationId)}${coordinateQuery}`);
     setKeyword("");
   };
 
@@ -38,7 +79,7 @@ export function GlobalSearchBar() {
                 <li key={location.id}>
                   <button
                     type="button"
-                    onClick={() => handleSelect(location.id)}
+                  onClick={() => void handleSelect(location.id)}
                     className="w-full rounded-md px-3 py-2 text-left transition-colors hover:bg-accent"
                   >
                     <span className="block text-sm font-medium text-foreground">{location.fullName}</span>
