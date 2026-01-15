@@ -1,6 +1,6 @@
 'use client';
 
-import type { LocationCoordinates } from "@/entities/location";
+import { formatLocationName, type LocationCoordinates } from "@/entities/location";
 import { FavoriteToggleButton, useFavorites } from "@/features/favorites";
 import { useWeatherByLocation } from "@/widgets/weather/api/use-weather-by-location";
 import { WeatherSummaryCard } from "@/widgets/weather/ui/weather-summary-card.client";
@@ -10,16 +10,11 @@ type LocationDetailClientProps = {
   initialCoordinates?: LocationCoordinates;
 };
 
-function normalizeLocationName(rawId: string) {
-  const decoded = decodeURIComponent(rawId ?? "");
-  return decoded.split("-").join(" ");
-}
-
 export default function LocationDetailClient({
   locationId,
   initialCoordinates,
 }: LocationDetailClientProps) {
-  const locationName = normalizeLocationName(locationId);
+  const locationName = formatLocationName(locationId);
   const { getFavoriteByLocationId } = useFavorites();
   const favorite = getFavoriteByLocationId(locationId);
   const resolvedCoordinates = initialCoordinates ?? favorite?.coordinates;

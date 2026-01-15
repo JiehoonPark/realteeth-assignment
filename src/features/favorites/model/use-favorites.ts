@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from "react";
 
-import type { LocationCoordinates, LocationId } from "@/entities/location";
+import { formatLocationName, type LocationCoordinates, type LocationId } from "@/entities/location";
 
 import { MAX_FAVORITES, type FavoriteLocation } from "./types";
 
@@ -66,7 +66,7 @@ function normalizeLocationId(rawId: LocationId) {
 }
 
 function normalizeLocationName(locationId: LocationId) {
-  return normalizeLocationId(locationId).split("-").join(" ");
+  return formatLocationName(normalizeLocationId(locationId));
 }
 
 function createFavorite({ locationId, alias, coordinates }: AddFavoriteParams): FavoriteLocation {

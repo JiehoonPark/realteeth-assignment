@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import type { FavoriteLocation } from "@/features/favorites";
 import { useFavorites } from "@/features/favorites/model/use-favorites";
+import { formatLocationName } from "@/entities/location";
 import {
   getWeatherByCoordinates,
   getWeatherByName,
@@ -27,16 +28,12 @@ const CANCEL_LABEL = "취소";
 const REMOVE_LABEL = "삭제";
 const FALLBACK_MESSAGE = "해당 장소의 정보가 제공되지 않습니다.";
 
-function normalizeLocationName(locationId: string) {
-  return decodeURIComponent(locationId).split("-").join(" ");
-}
-
 export function FavoriteWeatherCard({ favorite }: FavoriteWeatherCardProps) {
   const router = useRouter();
   const [isEditingAlias, setIsEditingAlias] = useState(false);
   const [aliasDraft, setAliasDraft] = useState(favorite.alias);
   const { updateFavoriteAlias, removeFavorite } = useFavorites();
-  const locationName = normalizeLocationName(favorite.locationId);
+  const locationName = formatLocationName(favorite.locationId);
   const coordinates = favorite.coordinates;
   const hasCoordinates =
     Boolean(coordinates) &&

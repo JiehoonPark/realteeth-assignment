@@ -1,15 +1,6 @@
 import type { LocationCoordinates } from "@/entities/location";
 import type { WeatherSummary } from "@/entities/weather";
-
-async function getErrorMessage(response: Response) {
-  try {
-    const data = (await response.json()) as { message?: string };
-    if (data?.message) return data.message;
-  } catch {
-    // ignore parsing errors
-  }
-  return `날씨 정보를 가져오지 못했습니다. (${response.status})`;
-}
+import { getWeatherErrorMessage } from "@/entities/weather/lib/get-weather-error-message";
 
 export async function getWeatherByCoordinates(coordinates: LocationCoordinates) {
   const response = await fetch(
@@ -17,7 +8,7 @@ export async function getWeatherByCoordinates(coordinates: LocationCoordinates) 
   );
 
   if (!response.ok) {
-    const message = await getErrorMessage(response);
+    const message = await getWeatherErrorMessage(response);
     throw new Error(message);
   }
 

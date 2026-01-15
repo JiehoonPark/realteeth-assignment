@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import type { LocationCoordinates } from "@/entities/location";
+import { formatLocationName, type LocationCoordinates } from "@/entities/location";
 import { useLocationSearch } from "@/features/search";
 import { useDebouncedValue } from "@/shared/lib/use-debounce";
 import { Input } from "@/shared/ui/input";
@@ -33,10 +33,6 @@ async function fetchCoordinatesByName(
   return { latitude: data.latitude, longitude: data.longitude };
 }
 
-function buildLocationName(locationId: string) {
-  return decodeURIComponent(locationId).split("-").join(" ");
-}
-
 export function GlobalSearchBar() {
   const router = useRouter();
   const [keyword, setKeyword] = useState("");
@@ -44,7 +40,7 @@ export function GlobalSearchBar() {
   const { results, message } = useLocationSearch({ keyword: debouncedKeyword });
 
   const handleSelect = async (locationId: string) => {
-    const locationName = buildLocationName(locationId);
+    const locationName = formatLocationName(locationId);
     let coordinates: LocationCoordinates | undefined;
 
     try {
@@ -79,7 +75,7 @@ export function GlobalSearchBar() {
                 <li key={location.id}>
                   <button
                     type="button"
-                  onClick={() => void handleSelect(location.id)}
+                    onClick={() => void handleSelect(location.id)}
                     className="w-full rounded-md px-3 py-2 text-left transition-colors hover:bg-accent"
                   >
                     <span className="block text-sm font-medium text-foreground">{location.fullName}</span>
