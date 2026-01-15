@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { getCurrentWeatherByCoords } from "@/entities/weather/api/get-current-weather";
+import { WEATHER_REFETCH_INTERVAL_MS } from "@/entities/weather/model/query-options";
 import { weatherQueryKeys } from "@/entities/weather/model/query-keys";
 import type { GeolocationPosition } from "@/shared/lib/geolocation";
 
@@ -18,6 +19,7 @@ export function useCurrentWeather(coords: UseCurrentWeatherParams) {
       return getCurrentWeatherByCoords(coords);
     },
     enabled: Boolean(coords),
+    refetchInterval: WEATHER_REFETCH_INTERVAL_MS,
   });
 
   return queryResult;

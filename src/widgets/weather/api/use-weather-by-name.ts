@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { getWeatherByName } from "@/entities/weather/api/get-weather-by-name";
+import { WEATHER_REFETCH_INTERVAL_MS } from "@/entities/weather/model/query-options";
 import { weatherQueryKeys } from "@/entities/weather/model/query-keys";
 
 export function useWeatherByName(locationName: string | undefined) {
@@ -15,6 +16,7 @@ export function useWeatherByName(locationName: string | undefined) {
       return getWeatherByName(locationName);
     },
     enabled: Boolean(locationName),
+    refetchInterval: WEATHER_REFETCH_INTERVAL_MS,
   });
 
   return queryResult;
