@@ -10,6 +10,7 @@ import {
 } from "@/shared/ui/card";
 import type { ReactNode } from "react";
 import {
+  getCurrentHourlySlotIndex,
   getOpenWeatherIconAlt,
   getOpenWeatherIconUrl,
   type WeatherSummary,
@@ -27,25 +28,6 @@ type WeatherSummaryCardProps = {
 
 const DEFAULT_ERROR_MESSAGE = "날씨 정보를 가져오지 못했습니다.";
 const CONTENT_MIN_HEIGHT_CLASS = "min-h-[180px]";
-const MINUTES_PER_DAY = 24 * 60;
-
-function getMinutesOfDayFromDate(date: Date) {
-  return date.getHours() * 60 + date.getMinutes();
-}
-
-function getMinutesOfDayFromLabel(label: string) {
-  const [hourPart, minutePart = "0"] = label.split(":");
-  return Number(hourPart) * 60 + Number(minutePart);
-}
-
-function getCircularMinutesDiff(first: number, second: number) {
-  const diff = Math.abs(first - second);
-  return Math.min(diff, MINUTES_PER_DAY - diff);
-}
-
-function getForwardMinutesDiff(current: number, target: number) {
-  return (target - current + MINUTES_PER_DAY) % MINUTES_PER_DAY;
-}
 
 export function WeatherSummaryCard({
   title,
@@ -64,34 +46,12 @@ export function WeatherSummaryCard({
     : null;
   const iconAlt = getOpenWeatherIconAlt(summary?.description);
   const resolvedDescription = description?.trim() ?? "";
-  const currentMinutes = summary
-    ? getMinutesOfDayFromDate(new Date(summary.recordedAt))
-    : null;
-  const currentSlotIndex =
-    summary && currentMinutes !== null && summary.hourly.length > 0
-      ? summary.hourly.reduce((bestIndex, item, index) => {
-          const bestMinutes = getMinutesOfDayFromLabel(
-            summary.hourly[bestIndex].hour
-          );
-          const currentDiff = getCircularMinutesDiff(
-            currentMinutes,
-            getMinutesOfDayFromLabel(item.hour)
-          );
-          const bestDiff = getCircularMinutesDiff(currentMinutes, bestMinutes);
-          if (currentDiff < bestDiff) return index;
-          if (currentDiff > bestDiff) return bestIndex;
-
-          const currentForward = getForwardMinutesDiff(
-            currentMinutes,
-            getMinutesOfDayFromLabel(item.hour)
-          );
-          const bestForward = getForwardMinutesDiff(
-            currentMinutes,
-            bestMinutes
-          );
-          return currentForward < bestForward ? index : bestIndex;
-        }, 0)
-      : -1;
+  const currentSlotIndex = summary
+    ? getCurrentHourlySlotIndex({
+        hourly: summary.hourly,
+        recordedAt: summary.recordedAt,
+      })
+    : -1;
 
   return (
     <Card>
