@@ -1,60 +1,34 @@
 'use client';
 
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { formatLocationName, type LocationCoordinates } from "@/entities/location";
+import { getWeatherByName, weatherQueryKeys } from "@/entities/weather";
 import { useLocationSearch } from "@/features/search";
 import { useDebouncedValue } from "@/shared/lib/use-debounce";
 import { Input } from "@/shared/ui/input";
 
 const DEBOUNCE_DELAY_MS = 200;
 
-type CoordinatesResponse = {
-  latitude: number;
-  longitude: number;
-};
-
-async function fetchCoordinatesByName(
-  locationName: string,
-): Promise<LocationCoordinates | undefined> {
-  const response = await fetch(
-    `/api/coordinates?name=${encodeURIComponent(locationName)}`,
-  );
-
-  if (!response.ok) return undefined;
-
-  const data = (await response.json()) as CoordinatesResponse;
-  const hasValidCoordinates =
-    Number.isFinite(data.latitude) && Number.isFinite(data.longitude);
-
-  if (!hasValidCoordinates) return undefined;
-
-  return { latitude: data.latitude, longitude: data.longitude };
-}
-
 export function GlobalSearchBar() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [keyword, setKeyword] = useState("");
   const debouncedKeyword = useDebouncedValue(keyword, DEBOUNCE_DELAY_MS);
   const { results, message } = useLocationSearch({ keyword: debouncedKeyword });
 
-  const handleSelect = async (locationId: string) => {
-    const locationName = formatLocationName(locationId);
-    let coordinates: LocationCoordinates | undefined;
-
-    try {
-      coordinates = await fetchCoordinatesByName(locationName);
-    } catch (error) {
-      coordinates = undefined;
-    }
-
-    const coordinateQuery = coordinates
-      ? `?lat=${coordinates.latitude}&lon=${coordinates.longitude}`
-      : "";
-
-    router.push(`/locations/${encodeURIComponent(locationId)}${coordinateQuery}`);
+  const handleSelect = (locationId: string) => {
+    router.push(`/locations/${encodeURIComponent(locationId)}`);
     setKeyword("");
+  };
+
+  const handlePrefetch = (locationId: string, locationName: string) => {
+    router.prefetch(`/locations/${encodeURIComponent(locationId)}`);
+    void queryClient.prefetchQuery({
+      queryKey: weatherQueryKeys.byName(locationName),
+      queryFn: () => getWeatherByName(locationName),
+    });
   };
 
   return (
@@ -75,7 +49,10 @@ export function GlobalSearchBar() {
                 <li key={location.id}>
                   <button
                     type="button"
-                    onClick={() => void handleSelect(location.id)}
+                    onClick={() => handleSelect(location.id)}
+                    onPointerEnter={() =>
+                      handlePrefetch(location.id, location.fullName)
+                    }
                     className="w-full rounded-md px-3 py-2 text-left transition-colors hover:bg-accent"
                   >
                     <span className="block text-sm font-medium text-foreground">{location.fullName}</span>
