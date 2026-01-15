@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import type { KeyboardEvent } from "react";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
 import type { FavoriteLocation } from "@/features/favorites";
 import { useFavorites } from "@/features/favorites/model/use-favorites";
@@ -11,7 +11,9 @@ import { formatLocationName } from "@/entities/location";
 import {
   getWeatherByCoordinates,
   getWeatherByName,
+  WEATHER_CACHE_TIME_MS,
   WEATHER_REFETCH_INTERVAL_MS,
+  WEATHER_STALE_TIME_MS,
   weatherQueryKeys,
 } from "@/entities/weather";
 import { Button } from "@/shared/ui/button";
@@ -56,6 +58,10 @@ export function FavoriteWeatherCard({ favorite }: FavoriteWeatherCardProps) {
         : getWeatherByName(locationName),
     enabled: hasCoordinates ? true : Boolean(locationName),
     refetchInterval: WEATHER_REFETCH_INTERVAL_MS,
+    staleTime: WEATHER_STALE_TIME_MS,
+    gcTime: WEATHER_CACHE_TIME_MS,
+    refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
   });
 
   const handleAliasSave = () => {

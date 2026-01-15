@@ -1,12 +1,14 @@
 'use client';
 
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
 import type { LocationCoordinates } from "@/entities/location";
 import {
   getWeatherByCoordinates,
   getWeatherByName,
+  WEATHER_CACHE_TIME_MS,
   WEATHER_REFETCH_INTERVAL_MS,
+  WEATHER_STALE_TIME_MS,
   weatherQueryKeys,
 } from "@/entities/weather";
 
@@ -42,5 +44,9 @@ export function useWeatherByLocation({
         : getWeatherByName(locationName),
     enabled: canUseCoordinates ? true : Boolean(locationName),
     refetchInterval: WEATHER_REFETCH_INTERVAL_MS,
+    staleTime: WEATHER_STALE_TIME_MS,
+    gcTime: WEATHER_CACHE_TIME_MS,
+    refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
   });
 }

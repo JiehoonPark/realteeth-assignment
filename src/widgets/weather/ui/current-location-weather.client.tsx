@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { requestCurrentPosition, type GeolocationError, type GeolocationPosition } from "@/shared/lib/geolocation";
 import { useCurrentWeather } from "@/widgets/weather/api/use-current-weather";
@@ -12,36 +13,50 @@ type WeatherState = {
   coordinates: GeolocationPosition | null;
 };
 
+const LAST_KNOWN_COORDINATES_QUERY_KEY = ["last-known-coordinates"];
+
 function normalizeError(error: unknown): string | undefined {
   if (error instanceof Error) return error.message;
   return undefined;
 }
 
 export function CurrentLocationWeather() {
-  const [state, setState] = useState<WeatherState>({
-    isRequestingLocation: true,
+  const queryClient = useQueryClient();
+  const cachedCoordinates =
+    queryClient.getQueryData<GeolocationPosition>(LAST_KNOWN_COORDINATES_QUERY_KEY) ?? null;
+  const [state, setState] = useState<WeatherState>(() => ({
+    isRequestingLocation: !cachedCoordinates,
     locationError: null,
-    coordinates: null,
-  });
+    coordinates: cachedCoordinates,
+  }));
 
   const requestLocation = useCallback(() => {
-    setState((prev) => ({ ...prev, isRequestingLocation: true, locationError: null }));
+    setState((prev) => ({
+      ...prev,
+      isRequestingLocation: !prev.coordinates,
+      locationError: null,
+    }));
     let isMounted = true;
 
     requestCurrentPosition()
       .then((coords) => {
         if (!isMounted) return;
+        queryClient.setQueryData(LAST_KNOWN_COORDINATES_QUERY_KEY, coords);
         setState({ isRequestingLocation: false, locationError: null, coordinates: coords });
       })
       .catch((error: GeolocationError) => {
         if (!isMounted) return;
-        setState({ isRequestingLocation: false, locationError: error, coordinates: null });
+        setState((prev) => ({
+          isRequestingLocation: false,
+          locationError: error,
+          coordinates: prev.coordinates,
+        }));
       });
 
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [queryClient]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -52,9 +67,10 @@ export function CurrentLocationWeather() {
 
   const weatherQuery = useCurrentWeather(state.coordinates ?? undefined);
 
+  const hasWeatherData = Boolean(weatherQuery.data);
   const isLoading =
-    state.isRequestingLocation ||
-    (state.coordinates !== null && weatherQuery.status === "pending");
+    (!hasWeatherData && state.isRequestingLocation) ||
+    (!hasWeatherData && weatherQuery.isLoading);
 
   const errorMessage =
     state.locationError?.message ??
