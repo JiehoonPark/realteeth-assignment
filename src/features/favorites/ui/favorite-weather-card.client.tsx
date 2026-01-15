@@ -5,8 +5,8 @@ import type { KeyboardEvent } from "react";
 import { useState } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
-import type { FavoriteLocation } from "@/features/favorites";
-import { useFavorites } from "@/features/favorites/model/use-favorites";
+import type { FavoriteLocation } from "../model/types";
+import { useFavorites } from "../model/use-favorites";
 import { formatLocationName } from "@/entities/location";
 import {
   getWeatherByCoordinates,

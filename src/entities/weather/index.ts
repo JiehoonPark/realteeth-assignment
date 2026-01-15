@@ -11,5 +11,6 @@ export {
 } from "./model/query-options";
 export { getWeatherByName } from "./api/get-weather-by-name";
 export { getWeatherByCoordinates } from "./api/get-weather-by-coordinates";
+export { getCurrentWeatherByCoords } from "./api/get-current-weather";
 export { getOpenWeatherIconAlt, getOpenWeatherIconUrl } from "./lib/openweather-icons";
 export { getCurrentHourlySlotIndex } from "./lib/hourly-slots";

@@ -2,7 +2,7 @@
 
 import type { LocationCoordinates, LocationId } from "@/entities/location";
 
-import { useFavorites } from "@/features/favorites/model/use-favorites";
+import { useFavorites } from "../model/use-favorites";
 import { Button } from "@/shared/ui/button";
 
 type FavoriteToggleButtonProps = {

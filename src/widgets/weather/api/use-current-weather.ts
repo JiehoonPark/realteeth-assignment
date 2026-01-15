@@ -2,13 +2,13 @@
 
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
-import { getCurrentWeatherByCoords } from "@/entities/weather/api/get-current-weather";
 import {
+  getCurrentWeatherByCoords,
   WEATHER_CACHE_TIME_MS,
   WEATHER_REFETCH_INTERVAL_MS,
   WEATHER_STALE_TIME_MS,
-} from "@/entities/weather/model/query-options";
-import { weatherQueryKeys } from "@/entities/weather/model/query-keys";
+  weatherQueryKeys,
+} from "@/entities/weather";
 import type { GeolocationPosition } from "@/shared/lib/geolocation";
 
 type UseCurrentWeatherParams = GeolocationPosition | undefined;

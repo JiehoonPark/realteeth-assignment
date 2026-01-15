@@ -4,8 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { requestCurrentPosition, type GeolocationError, type GeolocationPosition } from "@/shared/lib/geolocation";
-import { useCurrentWeather } from "@/widgets/weather/api/use-current-weather";
-import { WeatherSummaryCard } from "@/widgets/weather/ui/weather-summary-card.client";
+import { useCurrentWeather } from "../api/use-current-weather";
+import { WeatherSummaryCard } from "./weather-summary-card.client";
 
 type WeatherState = {
   isRequestingLocation: boolean;

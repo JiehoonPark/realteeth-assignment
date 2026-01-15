@@ -1,4 +1,4 @@
-import { FavoriteLocations } from "@/widgets/favorites/ui/favorite-locations.client";
+import { FavoriteLocations } from "@/widgets/favorites";
 
 export default function FavoritesPage() {
   return (

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { mergeClassNames } from "@/shared/lib/utils";
-import { GlobalSearchBar } from "@/widgets/gnb/ui/global-search-bar.client";
+import { GlobalSearchBar } from "./global-search-bar.client";
 
 const HOME_LABEL = "현재위치";
 const FAVORITES_LABEL = "즐겨찾기";

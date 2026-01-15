@@ -2,8 +2,8 @@
 
 import { formatLocationName, type LocationCoordinates } from "@/entities/location";
 import { FavoriteToggleButton, useFavorites } from "@/features/favorites";
-import { useWeatherByLocation } from "@/widgets/weather/api/use-weather-by-location";
-import { WeatherSummaryCard } from "@/widgets/weather/ui/weather-summary-card.client";
+import { useWeatherByLocation } from "../api/use-weather-by-location";
+import { WeatherSummaryCard } from "./weather-summary-card.client";
 
 type LocationDetailClientProps = {
   locationId: string;
