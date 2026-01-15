@@ -38,12 +38,18 @@ export function WeatherSummaryCard({
   const resolvedErrorMessage = errorMessage || DEFAULT_ERROR_MESSAGE;
   const iconUrl = summary?.icon ? getOpenWeatherIconUrl(summary.icon, "4x") : null;
   const iconAlt = getOpenWeatherIconAlt(summary?.description);
+  const resolvedDescription = description?.trim() ?? "";
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>{title}</CardTitle>
-        {description ? <CardDescription>{description}</CardDescription> : null}
+        <CardDescription
+          className="min-h-5"
+          aria-hidden={resolvedDescription.length === 0}
+        >
+          {resolvedDescription}
+        </CardDescription>
         {action ? <CardAction>{action}</CardAction> : null}
       </CardHeader>
       <CardContent className={`space-y-4 ${CONTENT_MIN_HEIGHT_CLASS}`}>

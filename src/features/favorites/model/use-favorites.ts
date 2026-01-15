@@ -219,6 +219,7 @@ function updateFavoriteAlias({ locationId, alias }: UpdateFavoriteAliasParams) {
 export function useFavorites() {
   const { favorites } = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   const isAtCapacity = favorites.length >= MAX_FAVORITES;
+  const isHydrated = hasHydrated;
 
   const isFavorite = (locationId: LocationId) =>
     favorites.some(
@@ -232,6 +233,7 @@ export function useFavorites() {
 
   return {
     favorites,
+    isHydrated,
     isAtCapacity,
     isFavorite,
     getFavoriteByLocationId,
