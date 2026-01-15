@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import type { ReactNode } from "react";
 
 import { ReactQueryProvider } from "@/shared/providers/react-query-provider";
-import { AppGnb } from "@/widgets/gnb/ui/app-gnb.client";
+import { GlobalNavigationBar } from "@/widgets/gnb/ui/app-gnb.client";
 
 import "./globals.css";
 
@@ -34,7 +34,7 @@ export default function RootLayout({
       >
         <ReactQueryProvider>
           <div className="min-h-screen bg-background text-foreground">
-            <AppGnb />
+            <GlobalNavigationBar />
             <div className="pt-20">{children}</div>
           </div>
         </ReactQueryProvider>
