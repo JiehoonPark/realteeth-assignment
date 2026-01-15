@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   Card,
@@ -9,7 +9,11 @@ import {
   CardTitle,
 } from "@/shared/ui/card";
 import type { ReactNode } from "react";
-import { getOpenWeatherIconAlt, getOpenWeatherIconUrl, type WeatherSummary } from "@/entities/weather";
+import {
+  getOpenWeatherIconAlt,
+  getOpenWeatherIconUrl,
+  type WeatherSummary,
+} from "@/entities/weather";
 
 type WeatherSummaryCardProps = {
   title: string;
@@ -23,6 +27,25 @@ type WeatherSummaryCardProps = {
 
 const DEFAULT_ERROR_MESSAGE = "날씨 정보를 가져오지 못했습니다.";
 const CONTENT_MIN_HEIGHT_CLASS = "min-h-[180px]";
+const MINUTES_PER_DAY = 24 * 60;
+
+function getMinutesOfDayFromDate(date: Date) {
+  return date.getHours() * 60 + date.getMinutes();
+}
+
+function getMinutesOfDayFromLabel(label: string) {
+  const [hourPart, minutePart = "0"] = label.split(":");
+  return Number(hourPart) * 60 + Number(minutePart);
+}
+
+function getCircularMinutesDiff(first: number, second: number) {
+  const diff = Math.abs(first - second);
+  return Math.min(diff, MINUTES_PER_DAY - diff);
+}
+
+function getForwardMinutesDiff(current: number, target: number) {
+  return (target - current + MINUTES_PER_DAY) % MINUTES_PER_DAY;
+}
 
 export function WeatherSummaryCard({
   title,
@@ -36,9 +59,39 @@ export function WeatherSummaryCard({
   const hasError = Boolean(errorMessage);
   const hasSummary = Boolean(summary);
   const resolvedErrorMessage = errorMessage || DEFAULT_ERROR_MESSAGE;
-  const iconUrl = summary?.icon ? getOpenWeatherIconUrl(summary.icon, "4x") : null;
+  const iconUrl = summary?.icon
+    ? getOpenWeatherIconUrl(summary.icon, "4x")
+    : null;
   const iconAlt = getOpenWeatherIconAlt(summary?.description);
   const resolvedDescription = description?.trim() ?? "";
+  const currentMinutes = summary
+    ? getMinutesOfDayFromDate(new Date(summary.recordedAt))
+    : null;
+  const currentSlotIndex =
+    summary && currentMinutes !== null && summary.hourly.length > 0
+      ? summary.hourly.reduce((bestIndex, item, index) => {
+          const bestMinutes = getMinutesOfDayFromLabel(
+            summary.hourly[bestIndex].hour
+          );
+          const currentDiff = getCircularMinutesDiff(
+            currentMinutes,
+            getMinutesOfDayFromLabel(item.hour)
+          );
+          const bestDiff = getCircularMinutesDiff(currentMinutes, bestMinutes);
+          if (currentDiff < bestDiff) return index;
+          if (currentDiff > bestDiff) return bestIndex;
+
+          const currentForward = getForwardMinutesDiff(
+            currentMinutes,
+            getMinutesOfDayFromLabel(item.hour)
+          );
+          const bestForward = getForwardMinutesDiff(
+            currentMinutes,
+            bestMinutes
+          );
+          return currentForward < bestForward ? index : bestIndex;
+        }, 0)
+      : -1;
 
   return (
     <Card>
@@ -124,22 +177,50 @@ export function WeatherSummaryCard({
                 </span>
               </div>
               <div className="text-xs text-muted-foreground sm:col-span-2">
-                기준 시각: {new Date(summary.recordedAt).toLocaleString("ko-KR")}
+                기준 시각:{" "}
+                {new Date(summary.recordedAt).toLocaleString("ko-KR")}
               </div>
             </div>
             <div className="space-y-2">
               <p className="text-xs font-medium text-muted-foreground">
                 시간대별 기온
               </p>
-              <div className="flex gap-2 overflow-x-auto pb-1 text-xs text-muted-foreground">
-                {summary.hourly.map((item) => (
-                  <span
-                    key={`${item.hour}-${item.temperature}`}
-                    className="shrink-0 rounded-md bg-muted px-2 py-1"
-                  >
-                    {item.hour} · {Math.round(item.temperature)}°C
-                  </span>
-                ))}
+              <div className="grid gap-2 sm:hidden">
+                {summary.hourly.map((item, index) => {
+                  const isCurrentTime = index === currentSlotIndex;
+
+                  return (
+                    <div
+                      key={`${item.hour}-${item.temperature}`}
+                      className={`flex items-center justify-between rounded-md border border-border/60 px-3 py-2 text-sm ${
+                        isCurrentTime
+                          ? "bg-foreground/10 text-foreground font-medium ring-1 ring-foreground/10 border-transparent"
+                          : "bg-muted/30 text-muted-foreground"
+                      }`}
+                    >
+                      <span>{item.hour}</span>
+                      <span>{Math.round(item.temperature)}°C</span>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="hidden gap-2 overflow-x-auto pb-1 text-xs text-muted-foreground sm:flex">
+                {summary.hourly.map((item, index) => {
+                  const isCurrentTime = index === currentSlotIndex;
+
+                  return (
+                    <span
+                      key={`${item.hour}-${item.temperature}`}
+                      className={`shrink-0 min-w-[96px] rounded-md px-3 py-1.5 text-center ${
+                        isCurrentTime
+                          ? "bg-foreground/10 text-foreground font-medium ring-1 ring-foreground/10"
+                          : "bg-muted"
+                      }`}
+                    >
+                      {item.hour} · {Math.round(item.temperature)}°C
+                    </span>
+                  );
+                })}
               </div>
             </div>
           </div>

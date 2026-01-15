@@ -2,10 +2,11 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import type { KeyboardEvent } from "react";
 import { useState } from "react";
 
 import { getWeatherByName, weatherQueryKeys } from "@/entities/weather";
-import { useLocationSearch } from "@/features/search";
+import { getLocationMatches, useLocationSearch } from "@/features/search";
 import { useDebouncedValue } from "@/shared/lib/use-debounce";
 import { Input } from "@/shared/ui/input";
 
@@ -17,6 +18,28 @@ export function GlobalSearchBar() {
   const [keyword, setKeyword] = useState("");
   const debouncedKeyword = useDebouncedValue(keyword, DEBOUNCE_DELAY_MS);
   const { results, message } = useLocationSearch({ keyword: debouncedKeyword });
+
+  const handleSubmit = () => {
+    const trimmedKeyword = keyword.trim();
+    if (!trimmedKeyword) return;
+
+    const immediateResults = getLocationMatches(trimmedKeyword);
+    const bestMatch = immediateResults[0] ?? null;
+
+    if (bestMatch) {
+      handleSelect(bestMatch.id);
+      return;
+    }
+
+    router.push(`/search?keyword=${encodeURIComponent(trimmedKeyword)}`);
+    setKeyword("");
+  };
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key !== "Enter" || event.nativeEvent.isComposing) return;
+    event.preventDefault();
+    handleSubmit();
+  };
 
   const handleSelect = (locationId: string) => {
     router.push(`/locations/${encodeURIComponent(locationId)}`);
@@ -37,6 +60,7 @@ export function GlobalSearchBar() {
         placeholder="예: 서울특별시, 종로구, 청운동"
         value={keyword}
         onChange={(event) => setKeyword(event.target.value)}
+        onKeyDown={handleKeyDown}
         className="bg-background"
       />
       {(debouncedKeyword || message) && (
