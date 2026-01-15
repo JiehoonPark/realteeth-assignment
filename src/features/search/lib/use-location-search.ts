@@ -62,23 +62,8 @@ export function getLocationMatches(keyword: string) {
   return sortLocationsByMatch({ keyword, results });
 }
 
-export function selectBestLocationMatch({
-  keyword,
-  results,
-}: {
-  keyword: string;
-  results: LocationNode[];
-}) {
-  const sortedResults = sortLocationsByMatch({ keyword, results });
-  return sortedResults[0] ?? null;
-}
-
 export function useLocationSearch({ keyword }: UseLocationSearchParams) {
   const results = useMemo(() => getLocationMatches(keyword), [keyword]);
-  const bestMatch = useMemo(
-    () => selectBestLocationMatch({ keyword, results }),
-    [keyword, results],
-  );
 
   const hasKeyword = keyword.trim().length > 0;
   const hasResults = results.length > 0;
@@ -91,7 +76,6 @@ export function useLocationSearch({ keyword }: UseLocationSearchParams) {
 
   return {
     results,
-    bestMatch,
     message,
   };
 }
